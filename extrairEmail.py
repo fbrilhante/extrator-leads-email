@@ -10,7 +10,7 @@ import openpyxl
 load_dotenv() 
 
 
-EMAIL_USER = "franciscobraga99@gmail.com"
+EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
 IMAP_SERVER = "imap.gmail.com"
 
