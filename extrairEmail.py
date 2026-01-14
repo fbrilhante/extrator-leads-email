@@ -71,14 +71,11 @@ def buscar_email_lead():
         else:
             body = msg.get_payload(decode=True).decode()
         
-        return body 
     
     mail.close()
     mail.logout()
+    return body 
 
-
-
-import pandas as pd
 
 
 def extrair_dados_do_lead(corpo_do_email):
@@ -88,21 +85,47 @@ def extrair_dados_do_lead(corpo_do_email):
     if not corpo_do_email:
         return None
 
-    lead = {}
+    lead = {
+        # --- Dados do Lead (Início) ---
+        'Nome do lead': '',   
+        'Hora de Entrada': '',
+        'Email': '',          
+        'Publico': '',        
+        'Anuncio': '',
+
+        'Qualidade': '',          
+        'Etapa Lead': 'Lead',     
+        'Etapa Atendimento': '',  
+        'Etapa Agendamento': '',  
+        'Etapa Visita': '',       
+        'Etapa Proposta': '',     
+        'Etapa Venda': '',       
+
+        # --- Colunas Técnicas/Originais ---
+        'Data de entrada': '', 
+        'Corretor': 'Amaury Bessa',
+        'Data que entrou em contato': '',
+        'Hora que entrou em contato': '',
+        'Canal de atração': 'Landing Page',
+        'Meio de comunicação que conseguiu contato': 'Email',
+        'Tentativa que conseguiu contato': '1ª tentativa',
+        'Produto': ''
+    }
+
     texto_linear = corpo_do_email.replace("\n", " ")
 
     # Regex para capturar infos
     match_nome = re.search(r"Name:\s*(.*?)\s*Telefone:", texto_linear)
     if match_nome:
-        lead['Nome'] = match_nome.group(1).strip()
+        lead['Nome do lead'] = match_nome.group(1).strip()
     
-    match_data=re.search(r"Time:\s*(\d{2}/\d{2}/\d{4})",texto_linear)
-    if match_data:
-        lead['Data Entrada'] = match_data.group(1)
+    #match_data=re.search(r"Time:\s*(\d{2}/\d{2}/\d{4})",texto_linear)
+    #if match_data:
+       # lead['Data Entrada'] = match_data.group(1)
 
     match_hora = re.search(r"Time:\s*(\d{2}:\d{2})",texto_linear)
     if match_hora:
-        lead['Hora Entrada'] = match_hora.group(1)
+        lead['Hora de Entrada'] = match_hora.group(1)
 
     match_email = re.search(r"Email:\s*([\w\.-]+@[\w\.-]+)", texto_linear)
     if match_email:
@@ -128,31 +151,50 @@ def salvar_em_excel(dados_do_lead):
         return
 
     nome_arquivo = "leads_extraidos.xlsx"
+
+    colunas_ordenadas = [
+        'Nome do lead',
+        'Hora de Entrada',
+        'Email', 
+        'Publico', 
+        'Anuncio',
+        'QualIdade',
+        'Etapa Lead',
+        'Etapa Atendimento',
+        'Etapa Agendamento',
+        'Etapa Visita',
+        'Etapa Proposta',
+        'Etapa Venda',
+        
+        'Data de entrada',
+        'Corretor', 
+        'Data que entrou em contato', 
+        'Hora que entrou em contato', 
+        'Canal de atração', 
+        'Meio de comunicação que conseguiu contato', 
+        'Tentativa que conseguiu contato', 
+        'Produto'
+    ]
     
-    # Adiciona a nova coluna "Etapa Lead"
-    dados_do_lead['Etapa Lead'] = 'Lead'
-    
-    # Converte o dicionário para um DataFrame do pandas
     df_novo_lead = pd.DataFrame([dados_do_lead])
+    
+    
+    df_novo_lead = df_novo_lead.reindex(columns=colunas_ordenadas)
 
     try:
         if os.path.exists(nome_arquivo):
-            # Se o arquivo já existe, lê o conteúdo e adiciona o novo lead
             df_existente = pd.read_excel(nome_arquivo)
             df_final = pd.concat([df_existente, df_novo_lead], ignore_index=True)
         else:
-            # Se o arquivo não existe, o DataFrame final é o novo lead
             df_final = df_novo_lead
 
-        # Salva o DataFrame no arquivo Excel
         df_final.to_excel(nome_arquivo, index=False)
         
-        nome_lead = dados_do_lead.get('Nome', 'Lead Desconhecido')
+        nome_lead = dados_do_lead.get('Nome do lead', 'Lead Desconhecido')
         print(f"Sucesso! Dados de '{nome_lead}' salvos em {nome_arquivo}")
 
     except Exception as e:
         print(f"Ocorreu um erro ao salvar o arquivo Excel: {e}")
-
 
 def main():
     print("Iniciando processo de busca e extração de leads...")
