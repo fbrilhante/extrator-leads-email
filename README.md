@@ -72,18 +72,6 @@ Finalmente, execute o script a partir do seu terminal:
 python extrairEmail.py
 ```
 
-O script irá se conectar, buscar por novos leads e, se encontrar algum, salvará os dados no arquivo `leads_extraidos.txt` na mesma pasta.
+O script irá se conectar, buscar por novos leads e, se encontrar algum, salvará os dados no arquivo `excel` na mesma pasta.
 
-## 📄 Saída
-
-Após a execução, um arquivo chamado `leads_extraidos.txt` será criado ou atualizado com os dados dos leads, formatados da seguinte maneira:
-
-```
-----Novo Lead Capturado----
-Nome: João da Silva
-Data Entrada: 13/01/2026
-Hora Entrada: 15:30
-Email: joao.silva@example.com
-Publico: cpc
-Anuncio: anuncio-imoveis-janeiro
 ```
