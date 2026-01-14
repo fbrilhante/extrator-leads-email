@@ -4,8 +4,10 @@ import email
 from email.header import decode_header 
 import os
 from dotenv import load_dotenv
+import pandas as pd
+import openpyxl
 
-load_dotenv()
+load_dotenv() 
 
 
 EMAIL_USER = "franciscobraga99@gmail.com"
@@ -76,6 +78,9 @@ def buscar_email_lead():
 
 
 
+import pandas as pd
+
+
 def extrair_dados_do_lead(corpo_do_email):
     """
     Extrai informações de um lead a partir do corpo do texto de um email.
@@ -91,7 +96,7 @@ def extrair_dados_do_lead(corpo_do_email):
     if match_nome:
         lead['Nome'] = match_nome.group(1).strip()
     
-    match_data=re.search(r"Time:\s*(\d{2}/d{2}/\d{4})",texto_linear)
+    match_data=re.search(r"Time:\s*(\d{2}/\d{2}/\d{4})",texto_linear)
     if match_data:
         lead['Data Entrada'] = match_data.group(1)
 
@@ -114,26 +119,39 @@ def extrair_dados_do_lead(corpo_do_email):
     return lead
 
 
-def salvar_em_txt(dados_do_lead):
+def salvar_em_excel(dados_do_lead):
     """
-    Salva os dados extraídos de um lead em um arquivo de texto.
+    Salva os dados extraídos de um lead em um arquivo Excel, adicionando ou atualizando.
     """
     if not dados_do_lead:
         print("Nenhum dado de lead para salvar.")
         return
 
-    nome_arquivo = "leads_extraidos.txt"
-    with open(nome_arquivo, "a", encoding="utf-8") as arquivo:
-        arquivo.write("----Novo Lead Capturado----\n")
-        for chave, valor in dados_do_lead.items():
-            linha = f"{chave}: {valor}\n"
-            arquivo.write(linha)
-        arquivo.write("\n")
+    nome_arquivo = "leads_extraidos.xlsx"
+    
+    # Adiciona a nova coluna "Etapa Lead"
+    dados_do_lead['Etapa Lead'] = 'Lead'
+    
+    # Converte o dicionário para um DataFrame do pandas
+    df_novo_lead = pd.DataFrame([dados_do_lead])
+
+    try:
+        if os.path.exists(nome_arquivo):
+            # Se o arquivo já existe, lê o conteúdo e adiciona o novo lead
+            df_existente = pd.read_excel(nome_arquivo)
+            df_final = pd.concat([df_existente, df_novo_lead], ignore_index=True)
+        else:
+            # Se o arquivo não existe, o DataFrame final é o novo lead
+            df_final = df_novo_lead
+
+        # Salva o DataFrame no arquivo Excel
+        df_final.to_excel(nome_arquivo, index=False)
         
         nome_lead = dados_do_lead.get('Nome', 'Lead Desconhecido')
         print(f"Sucesso! Dados de '{nome_lead}' salvos em {nome_arquivo}")
 
-
+    except Exception as e:
+        print(f"Ocorreu um erro ao salvar o arquivo Excel: {e}")
 
 
 def main():
@@ -146,7 +164,7 @@ def main():
         
         if dados_lead:
             print(f"Dados extraídos: {dados_lead}")
-            salvar_em_txt(dados_lead)
+            salvar_em_excel(dados_lead)
         else:
             print("Não foi possível extrair dados do lead do corpo do email.")
     else:
