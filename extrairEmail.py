@@ -152,49 +152,33 @@ def salvar_em_excel(dados_do_lead):
 
     nome_arquivo = "leads_extraidos.xlsx"
 
-    colunas_ordenadas = [
-        'Nome do lead',
-        'Hora de Entrada',
-        'Email', 
-        'Publico', 
-        'Anuncio',
-        'QualIdade',
-        'Etapa Lead',
-        'Etapa Atendimento',
-        'Etapa Agendamento',
-        'Etapa Visita',
-        'Etapa Proposta',
-        'Etapa Venda',
-        
-        'Data de entrada',
-        'Corretor', 
-        'Data que entrou em contato', 
-        'Hora que entrou em contato', 
-        'Canal de atração', 
-        'Meio de comunicação que conseguiu contato', 
-        'Tentativa que conseguiu contato', 
-        'Produto'
-    ]
-    
-    df_novo_lead = pd.DataFrame([dados_do_lead])
-    
-    
-    df_novo_lead = df_novo_lead.reindex(columns=colunas_ordenadas)
-
     try:
         if os.path.exists(nome_arquivo):
             df_existente = pd.read_excel(nome_arquivo)
-            df_final = pd.concat([df_existente, df_novo_lead], ignore_index=True)
+
+            ordem_do_arquivo = df_existente.columns.tolist()
+
+            colunas_extras = [col for col in df_novo_lead.columns if col not in ordem_do_arquivo]
+
+            ordem_final = ordem_do_arquivo + colunas_extras
+
+            df_novo_lead = df_novo_lead.reindex(columns=ordem_final)
+
+            df_final = pd.concat([df_existente, df_novo_lead],ignore_index=True)
+
         else:
+
             df_final = df_novo_lead
-
-        df_final.to_excel(nome_arquivo, index=False)
         
-        nome_lead = dados_do_lead.get('Nome do lead', 'Lead Desconhecido')
-        print(f"Sucesso! Dados de '{nome_lead}' salvos em {nome_arquivo}")
+        df_final.to_excel(nome_arquivo,index=False)
 
+        nome_lead = dados_do_lead.get('Nome do lead','Lead Desconhecido')
+
+        print(f"Sucesso! Dados de '{nome_lead}' salvos em {nome_arquivo}")    
     except Exception as e:
         print(f"Ocorreu um erro ao salvar o arquivo Excel: {e}")
+        print("Verifique se o arquivo não está aberto.")
+
 
 def main():
     print("Iniciando processo de busca e extração de leads...")
